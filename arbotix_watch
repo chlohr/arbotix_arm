@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+# Copyright (c) 2026 Christophe Lohr - GPLv3+
+
+import sys
+import random
+import time
+
+from arbotix_python.arbotix import ArbotiX
+from arbotix_python.ax12 import *
+
+
+class Robot(ArbotiX):
+
+    def __init__(self, port = "/dev/ttyUSB0", baud = 115200):
+        ArbotiX.__init__(self, port, baud)  
+        self._ser.timeout = 0.25
+        self.max_id = 10
+
+    def wakeup(self):
+        print("Wakeup servos", end="")
+        sys.stdout.flush()
+        for i in range(3):
+            for servo in range(1, self.max_id+1):
+                self.getPosition(servo)
+                sys.stdout.write(".")
+                sys.stdout.flush()
+        print("done.")
+    
+    def flex(self):
+        print("Disable the torque on the servomotors")
+        self.syncWrite( P_TORQUE_ENABLE, [ [i,0] for i in range(1, self.max_id+1) ] )
+
+    def query(self):
+        try:
+            ret = self.syncRead( list( range(1, self.max_id+1) ), P_PRESENT_POSITION_L, 2)
+            it = iter(ret)
+            for servo, (a,b) in enumerate( zip(it, it), start=1 ):
+                position = int(a) + (int(b)<<8)
+                if position != 65535:
+                    print(f"{servo:2d}:{position:03d} ", end="")
+            print("")
+        except:
+            print("Error: No servomotors?")
+    
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) > 2:
+            r = Robot(sys.argv[1], int(sys.argv[2]))
+        elif len(sys.argv) > 1:
+            r = Robot(sys.argv[1])
+        else:
+            r = Robot()
+        
+        r.wakeup()
+        r.flex()
+
+        while True:
+            r.query()
+            time.sleep(.2)
+            sys.stdout.write("\r\033[A")
+        
+    except KeyboardInterrupt:
+        print("\033[B\rExiting...")

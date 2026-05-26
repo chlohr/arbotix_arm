@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+
+# Copyright (c) 2026 Christophe Lohr - GPLv3+
+
+import sys
+import random
+import time
+
+from arbotix_python.arbotix import ArbotiX
+from arbotix_python.ax12 import *
+
+
+# Setup of the robotic system
+# List of [ servo_id, min_position, max_position ]
+# Note: The 'position' value typically ranges from 200 to 800
+# Warning: Do not handle unwanted configuration, just min-max for each servo
+SETUP = [
+            [ 1, 200, 800 ],
+            [ 2, 200, 800 ],
+            [ 3, 200, 800 ],
+            [ 4, 200, 800 ],
+            [ 5, 200, 800 ]
+        ]
+
+# A notable gesture
+# List of [ servo_id, position ]
+# Note: The 'position' value typically ranges from 200 to 800
+RAISE = [
+            [ 1, 500 ],
+            [ 2, 500 ],
+            [ 3, 800 ],
+            [ 4, 500 ],
+            [ 5, 500 ]
+        ]
+
+
+class Pincher(ArbotiX):
+
+    def __init__(self, port = "/dev/ttyUSB0", baud = 115200):
+        ArbotiX.__init__(self, port, baud)  
+        self._ser.timeout = 0.25
+        self.max_id = 5
+
+    def wakeup(self):
+        print("Wakeup servos", end="")
+        sys.stdout.flush()
+        for i in range(3):
+            for servo in range(1, self.max_id+1):
+                self.getPosition(servo)
+                sys.stdout.write(".")
+                sys.stdout.flush()
+        print("done.")
+    
+    def flex(self):
+        print("Disable the torque on the servomotors")
+        self.syncWrite( P_TORQUE_ENABLE, [ [i,0] for i in range(1, self.max_id+1) ] )
+
+    def rigid(self):
+        # Enable torque on the servomotors
+        self.syncWrite( P_TORQUE_ENABLE, [ [i,1] for i in range(1, self.max_id+1) ] )
+
+    def speed(self, val):
+        self.syncWrite( P_GOAL_SPEED_L, [ [i, val%256, val>>8] for i in range(1, self.max_id+1) ] )
+
+    def query(self):
+        try:
+            ret = self.syncRead( list( range(1, self.max_id+1) ), P_PRESENT_POSITION_L, 2)
+            it = iter(ret)
+            for servo, (a,b) in enumerate( zip(it, it), start=1 ):
+                position = int(a) + (int(b)<<8)
+                if position != 65535:
+                    print(f"{servo:2d}:{position:03d} ", end="")
+            print("")
+        except:
+            print("Error: No servomotors?")
+
+    def gesture(self, positions):
+        values = [ [i, pos%256, pos>>8] for i, pos in positions ]
+        self.syncWrite(P_GOAL_POSITION_L, values)
+
+    
+    
+    
+
+if __name__ == "__main__":
+    try:
+        if len(sys.argv) > 2:
+            r = Pincher(sys.argv[1], int(sys.argv[2]))
+        elif len(sys.argv) > 1:
+            r = Pincher(sys.argv[1])
+        else:
+            r = Pincher()
+        
+        r.wakeup()
+        r.rigid()
+        r.speed(120)
+        print("- Before -")
+        r.query()
+        
+        print("\n- Raise -")
+        r.gesture(RAISE)
+        r.query()
+        time.sleep(1.5)
+
+        print(f"\n- Motion -")
+        for j in range(5):
+            positions = [ [id, random.randint(p_min, p_max)] for id, p_min, p_max in SETUP ]
+            r.gesture(positions)
+            r.query()
+            time.sleep(1.5)
+            sys.stdout.write("\r\033[A")
+        sys.stdout.write("\033[B")
+        sys.stdout.flush()
+        
+        print("\n- Raise -")
+        r.gesture(RAISE)
+        r.query()
+        
+    except KeyboardInterrupt:
+        print("\nExiting...")
