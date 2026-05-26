@@ -6,8 +6,8 @@ TL;DR -- The impatients can skip directly to the last section of this page.
 
 I had the opportunity to play with a Pincher MK3 robotic arm. This page tells the story of my adventures with some low-level considerations...
 
-The Pincher MK3 5-DOF Robotic Arm was offered as a standard option on the [TurtleBot 2i](https://www.interbotix.com/interbotix-turtlebot-2i-mobile-ros-platform.aspx) 
-when it was released in 2015.
+The Pincher MK3 5-DOF Robotic Arm was offered as a standard option on the [TurtleBot 2i](https://www.therobotreport.com/turtlebot-2i-new-chassis-robot-arm-support-intel-joule/)
+when it was released in 2017.
 
 It consists of 5 [Dynamixel AX12-A](https://emanual.robotis.com/docs/en/dxl/ax/ax-12a/) servomotors (waist shoulder elbow wrist gripper), 
 controlled by an [ArbotiX-M](https://vanadiumlabs.github.io/arbotix/).
@@ -25,7 +25,7 @@ or an [RS485](https://en.wikipedia.org/wiki/RS-485) (4-wire connectors).
 These are serial links, in the sense that bits are transmitted one after the other to form bytes, and bytes one after the other to form messages.
 (Actually, that's the role of the [UART](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter) over RS232/RS485, but we can disregard it here.
 Also note that [TTL](https://en.wikipedia.org/wiki/Transistor%E2%80%93transistor_logic#Serial_signaling) is sometimes used as a synonym for RS232, 
-although in fact this acronym would be just as valid in an RS485 context; this is simply to indicate here that the voltage here is 3.3V or 5V, not 12V.)
+although in fact this acronym would be just as valid in an RS485 context; this is simply to indicate that the voltage here is 3.3V or 5V, not 12V.)
 
 RS232 and RS485 are designed primarily to be point-to-point connections: only two participants.
 And, to be effective, RS232 and RS485 offer bidirectional communication (*full duplex*), with each participant having a *transmit* line and a *receive* line.
@@ -33,13 +33,13 @@ And, to be effective, RS232 and RS485 offer bidirectional communication (*full d
 
 Two classic techniques can be cited to transform such point-to-point communications into bus-mode communication: *daisy chain* and *half duplex*.
 
-- With the *Dasy Chain Strategy*, each participant has two full-duplex communication ports. (A rich person's solution.)
+- With the *Dasy Chain strategy*, each participant has two full duplex communication ports. (A rich person's solution.)
   All participants are connected one after the other.
   When a participant receives data on one port, it retransmits it on the other port for the next participant, and so on.
   (Some examples: [AppleTalk](https://en.wikipedia.org/wiki/AppleTalk#Physical_implementation) [MIDI](https://en.wikipedia.org/wiki/MIDI#Devices)
   [DMX](https://en.wikipedia.org/wiki/DMX512) ...)
 
-- With the *half duplex strategy*, there is only one link which serves both for transmission and reception, but at different times.
+- With the *Half Duplex strategy*, there is only one link which serves both for transmission and reception, but at different times.
   There is only one communication port. All participants are electrically connected in parallel on it (in a chain, in a star, it doesn't matter).
   (This strategy is much less expensive in terms of electronics.)
   One just need to make sure that there is only one participant speaking at a time; 
@@ -58,7 +58,7 @@ Two classic techniques can be cited to transform such point-to-point communicati
 
 Regarding the design of its [message format](https://emanual.robotis.com/docs/en/dxl/protocol1/), Dynamixel follows rather typical strategies 
 (compare to [Modbus](https://en.wikipedia.org/wiki/Modbus) [HDLC](https://en.wikipedia.org/wiki/High-Level_Data_Link_Control) ...):
-[ static starting flags, node id, length, instruction code, instruction datas, checksum ].
+[ static starting flags, node id, length, instruction code, instruction datas, checksum ]
 
 Note that Dynamixel has introduced a [version 2](https://emanual.robotis.com/docs/en/dxl/protocol2/) for its protocol, which is not used in our configuration.
 It might be a very bad idea to try to update our servomotors...
@@ -87,7 +87,7 @@ When used with ROS projects (such as for a robotic arm on a TurtuleBot), the ins
 the bytes from the PC are transmitted to the Dynamixel servomotors, and vice versa.
 In fact, the Arbotix-M implements the specificities of the Dynamixel bus (half duplex & co.), and acts as a master node regarding the Dynamixel bus.
 In addition, it provides some extra commands (besides the classic Dynamixel commands) to offer the control on its other ports and GPIO.
-The communication protocol between a PC and the ArbotiX-M board is very similar to the Dynamixel protocol.
+The communication protocol between a PC and the ArbotiX-M board is similar to the Dynamixel protocol.
 
 On our Pincher MK3 robotic arm, the ArbotiX-M bord is in this bypass mode.
 Moreover, it comes with an USB-FTDI cable to plug it on a PC.
@@ -147,7 +147,7 @@ Well, the Dynamixel servomotors of the robotic arm are connected to the ArbotiX-
 which is supported by the PC's standard driver,
 and which appears on Linux via the special file '/dev/ttyUSB0' or '/dev/ttyUSB1' (or 'COM1' 'COM2' on Windows).
 
-So, to summarize, we just need to write the 'correct' bytes (according to the Dynamixel message format) to /dev/ttyUSB0.
+So, to summarize, we just need to write the correct bytes to /dev/ttyUSB0 (according to the Dynamixel message format & protocol).
 If we simply want to make our robot move, we don't need any middleware (ROS or similar).
 
 The few Python files offered in this repository do precisely that.
