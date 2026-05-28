@@ -12,19 +12,17 @@ from arbotix_python.ax12 import *
 
 class Robot(ArbotiX):
 
-    def __init__(self, port = "/dev/ttyUSB0", baud = 115200):
-        ArbotiX.__init__(self, port, baud)  
+    def __init__(self, port = "/dev/ttyUSB0", baud = 115200, max_id = 18):
+        ArbotiX.__init__(self, port, baud)
         self._ser.timeout = 0.25
-        self.max_id = 10
+        self.max_id = max_id
 
     def wakeup(self):
-        print("Wakeup servos", end="")
-        sys.stdout.flush()
+        print("Wakeup servos", end="", flush=True)
         for i in range(3):
             for servo in range(1, self.max_id+1):
                 self.getPosition(servo)
-                sys.stdout.write(".")
-                sys.stdout.flush()
+                print(".", end="", flush=True)
         print("done.")
     
     def flex(self):

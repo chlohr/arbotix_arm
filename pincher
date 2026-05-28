@@ -22,7 +22,7 @@ SETUP = [
             [ 5, 200, 800 ]
         ]
 
-# A notable gesture
+# Hard-coded gestures
 # List of [ servo_id, position ]
 # Note: The 'position' value typically ranges from 200 to 800
 RAISE = [
@@ -33,22 +33,28 @@ RAISE = [
             [ 5, 500 ]
         ]
 
+RESTING = [
+            [ 1, 500 ],
+            [ 2, 140 ],
+            [ 3, 198 ],
+            [ 4, 410 ],
+            [ 5, 500 ]
+        ]
 
-class Pincher(ArbotiX):
 
-    def __init__(self, port = "/dev/ttyUSB0", baud = 115200):
+class Robot(ArbotiX):
+
+    def __init__(self, port = "/dev/ttyUSB0", baud = 115200, max_id = 18):
         ArbotiX.__init__(self, port, baud)  
         self._ser.timeout = 0.25
-        self.max_id = 5
+        self.max_id = max_id
 
     def wakeup(self):
-        print("Wakeup servos", end="")
-        sys.stdout.flush()
+        print("Wakeup servos", end="", flush=True)
         for i in range(3):
             for servo in range(1, self.max_id+1):
                 self.getPosition(servo)
-                sys.stdout.write(".")
-                sys.stdout.flush()
+                print(".", end="", flush=True)
         print("done.")
     
     def flex(self):
@@ -80,41 +86,40 @@ class Pincher(ArbotiX):
 
     
     
-    
 
 if __name__ == "__main__":
     try:
         if len(sys.argv) > 2:
-            r = Pincher(sys.argv[1], int(sys.argv[2]))
+            pincher = Robot(sys.argv[1], int(sys.argv[2]))
         elif len(sys.argv) > 1:
-            r = Pincher(sys.argv[1])
+            pincher = Robot(sys.argv[1])
         else:
-            r = Pincher()
+            pincher = Robot(max_id = 5)
         
-        r.wakeup()
-        r.rigid()
-        r.speed(120)
+        pincher.wakeup()
+        pincher.rigid()
+        pincher.speed(120)
         print("- Before -")
-        r.query()
+        pincher.query()
         
         print("\n- Raise -")
-        r.gesture(RAISE)
-        r.query()
+        pincher.gesture(RAISE)
+        pincher.query()
         time.sleep(1.5)
 
         print(f"\n- Motion -")
         for j in range(5):
             positions = [ [id, random.randint(p_min, p_max)] for id, p_min, p_max in SETUP ]
-            r.gesture(positions)
-            r.query()
+            pincher.gesture(positions)
+            pincher.query()
             time.sleep(1.5)
             sys.stdout.write("\r\033[A")
         sys.stdout.write("\033[B")
         sys.stdout.flush()
         
-        print("\n- Raise -")
-        r.gesture(RAISE)
-        r.query()
+        print("\n- Resting -")
+        pincher.gesture(RESTING)
+        pincher.query()
         
     except KeyboardInterrupt:
         print("\nExiting...")
