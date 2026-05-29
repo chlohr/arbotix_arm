@@ -19,7 +19,7 @@ SETUP = [
             [ 2, 200, 800 ],
             [ 3, 200, 800 ],
             [ 4, 200, 800 ],
-            [ 5, 200, 800 ]
+            [ 5, 000, 500 ]
         ]
 
 # Hard-coded gestures
@@ -30,7 +30,7 @@ RAISE = [
             [ 2, 500 ],
             [ 3, 800 ],
             [ 4, 500 ],
-            [ 5, 500 ]
+            [ 5, 250 ]
         ]
 
 RESTING = [
@@ -38,7 +38,7 @@ RESTING = [
             [ 2, 140 ],
             [ 3, 198 ],
             [ 4, 410 ],
-            [ 5, 500 ]
+            [ 5, 250 ]
         ]
 
 
@@ -98,28 +98,32 @@ if __name__ == "__main__":
         
         pincher.wakeup()
         pincher.rigid()
-        pincher.speed(120)
+        pincher.speed(100)
         print("- Before -")
         pincher.query()
         
         print("\n- Raise -")
         pincher.gesture(RAISE)
+        time.sleep(2.5)
         pincher.query()
-        time.sleep(1.5)
 
         print(f"\n- Motion -")
         for j in range(5):
-            positions = [ [id, random.randint(p_min, p_max)] for id, p_min, p_max in SETUP ]
+            positions = [ [id, random.randint(p_min+20, p_max-20)] for id, p_min, p_max in SETUP ]
             pincher.gesture(positions)
+            time.sleep(2.5)
             pincher.query()
-            time.sleep(1.5)
             sys.stdout.write("\r\033[A")
         sys.stdout.write("\033[B")
         sys.stdout.flush()
         
         print("\n- Resting -")
+        time.sleep(2.5)
+        pincher.gesture(RESTING)
+        time.sleep(2)
         pincher.gesture(RESTING)
         pincher.query()
+        pincher.flex()
         
     except KeyboardInterrupt:
         print("\nExiting...")
