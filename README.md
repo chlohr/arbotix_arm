@@ -15,6 +15,7 @@ controlled by an [ArbotiX-M](https://vanadiumlabs.github.io/arbotix/).
 Note that it is quite similar to the [PhantomX](https://www.generationrobots.com/media/PhantomX_Pincher/PhantomX_Pincher_Arm_Quickstart.pdf), 
 except for the elbow geometry which is rotated 90°.
 
+![setup](setup.jpg)
 
 ## The Dynamixel Communication Bus
 
@@ -159,7 +160,8 @@ Note that 'arbotix.py' 'ax12.py' 'arbotix_terminal' come from the [Vanadiumlabs]
 Actually, there's nothing really new here. Just explanations.
 
 ```shell
-$ git clone
+$ git clone https://github.com/chlohr/arbotix_arm.git
+$ cd ./arbotix_arm
 $ python3 ./arbotix_terminal
 ^C
 $ python3 ./arbotix_watch
@@ -167,7 +169,7 @@ $ python3 ./arbotix_watch
 $ python3 ./pincher
 ```
 
-I noticed that I had to run 'ls' once or twice (in 'arbotix_terminal') to wake up the servomotors before everthing else.
+I noticed that I had to run 'ls' once or twice in 'arbotix_terminal' to wake up the servomotors before everthing else.
 (Or, more likely, to ensure the pyserial library correctly configures the serial port.)
 
 I also noticed that the servomotor on my gripper was incorrectly mounted, and that its disc was rotated a quarter turn.
