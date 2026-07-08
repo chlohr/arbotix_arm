@@ -15,7 +15,7 @@ controlled by an [ArbotiX-M](https://vanadiumlabs.github.io/arbotix/).
 Note that it is quite similar to the [PhantomX](https://www.generationrobots.com/media/PhantomX_Pincher/PhantomX_Pincher_Arm_Quickstart.pdf), 
 except for the elbow geometry which is rotated 90°.
 
- ![setup](setup.jpg)
+ ![setup](setup.jpg)
 
 
 ## The Dynamixel Communication Bus
